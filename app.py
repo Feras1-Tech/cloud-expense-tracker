@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 import sqlite3
 
 app = Flask(__name__)
@@ -65,7 +65,7 @@ def add():
     conn.commit()
     conn.close()
 
-    return home()
+    return redirect("/")
 
 
 if __name__ == "__main__":
