@@ -1,11 +1,36 @@
 from flask import Flask, request
+import sqlite3
 
 app = Flask(__name__)
 
-expenses = []
+def init_db():
+    conn = sqlite3.connect("expenses.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        amount REAL
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
 
 @app.route("/")
 def home():
+    conn = sqlite3.connect("expenses.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name, amount FROM expenses")
+    expenses = cursor.fetchall()
+
+    conn.close()
+
     html = """
     <h1>Expense Tracker</h1>
 
@@ -18,15 +43,30 @@ def home():
     <h2>Expenses</h2>
     """
 
-    for e in expenses:
-        html += f"<p>{e['name']} - ${e['amount']}</p>"
+    for expense in expenses:
+        html += f"<p>{expense[0]} - ${expense[1]}</p>"
 
     return html
 
+
 @app.route("/add", methods=["POST"])
 def add():
-    expenses.append({
-        "name": request.form["name"],
-        "amount": request.form["amount"]
-    })
+    name = request.form["name"]
+    amount = request.form["amount"]
+
+    conn = sqlite3.connect("expenses.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO expenses (name, amount) VALUES (?, ?)",
+        (name, amount)
+    )
+
+    conn.commit()
+    conn.close()
+
     return home()
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
