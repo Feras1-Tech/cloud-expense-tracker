@@ -1,17 +1,23 @@
 from flask import Flask, request, redirect
-import sqlite3
+import psycopg2
 
 app = Flask(__name__)
 
 def init_db():
-    conn = sqlite3.connect("expenses.db")
+    conn = psycopg2.connect(
+        host="34.52.251.175",
+        database="expenses",
+        user="postgres",
+        password="Expense@2026"
+    )
+
     cursor = conn.cursor()
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS expenses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        amount REAL
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        amount DECIMAL
     )
     """)
 
@@ -23,20 +29,23 @@ init_db()
 
 @app.route("/")
 def home():
-    conn = sqlite3.connect("expenses.db")
+
+    conn = psycopg2.connect(
+        host="34.52.251.175",
+        database="expenses",
+        user="postgres",
+        password="Expense@2026"
+    )
+
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, name, amount FROM expenses")
     expenses = cursor.fetchall()
 
-    cursor.execute("SELECT SUM(amount) FROM expenses")
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM expenses")
     total = cursor.fetchone()[0]
 
-    if total is None:
-        total = 0
-
     conn.close()
-
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -180,11 +189,17 @@ def add():
     name = request.form["name"]
     amount = request.form["amount"]
 
-    conn = sqlite3.connect("expenses.db")
+    conn = psycopg2.connect(
+        host="34.52.251.175",
+        database="expenses",
+        user="postgres",
+        password="Expense@2026"
+    )
+
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO expenses (name, amount) VALUES (?, ?)",
+        "INSERT INTO expenses (name, amount) VALUES (%s, %s)",
         (name, amount)
     )
 
@@ -196,11 +211,18 @@ def add():
 
 @app.route("/delete/<int:expense_id>")
 def delete(expense_id):
-    conn = sqlite3.connect("expenses.db")
+
+    conn = psycopg2.connect(
+        host="34.52.251.175",
+        database="expenses",
+        user="postgres",
+        password="Expense@2026"
+    )
+
     cursor = conn.cursor()
 
     cursor.execute(
-        "DELETE FROM expenses WHERE id = ?",
+        "DELETE FROM expenses WHERE id = %s",
         (expense_id,)
     )
 
@@ -208,7 +230,3 @@ def delete(expense_id):
     conn.close()
 
     return redirect("/")
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
