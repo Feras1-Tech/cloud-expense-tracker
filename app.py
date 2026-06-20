@@ -38,26 +38,139 @@ def home():
     conn.close()
 
     html = f"""
-    <h1>Expense Tracker</h1>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Expense Tracker</title>
 
-    <h2>Total Expenses: ${total}</h2>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background: #f4f6f9;
+                margin: 0;
+                padding: 40px;
+            }}
 
-    <form action="/add" method="post">
-        <input name="name" placeholder="Expense Name" required>
-        <input name="amount" type="number" step="0.01" placeholder="Amount" required>
-        <button type="submit">Add Expense</button>
-    </form>
+            .container {{
+                max-width: 800px;
+                margin: auto;
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }}
 
-    <h2>Expenses</h2>
+            h1 {{
+                text-align: center;
+                color: #333;
+            }}
+
+            .total {{
+                text-align: center;
+                font-size: 24px;
+                color: green;
+                margin-bottom: 25px;
+            }}
+
+            form {{
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }}
+
+            input {{
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+            }}
+
+            button {{
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                cursor: pointer;
+            }}
+
+            button:hover {{
+                background: #0056b3;
+            }}
+
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+
+            th {{
+                background: #007bff;
+                color: white;
+                padding: 12px;
+            }}
+
+            td {{
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+            }}
+
+            .delete {{
+                color: red;
+                text-decoration: none;
+                font-weight: bold;
+            }}
+
+            .delete:hover {{
+                color: darkred;
+            }}
+        </style>
+    </head>
+
+    <body>
+
+        <div class="container">
+
+            <h1>💰 Expense Tracker</h1>
+
+            <div class="total">
+                Total Expenses: ${total:.2f}
+            </div>
+
+            <form action="/add" method="post">
+                <input name="name" placeholder="Expense Name" required>
+                <input name="amount" type="number" step="0.01" placeholder="Amount" required>
+                <button type="submit">Add Expense</button>
+            </form>
+
+            <table>
+                <tr>
+                    <th>Expense</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
     """
 
     for expense in expenses:
         html += f"""
-        <p>
-            {expense[1]} - ${expense[2]}
-            <a href="/delete/{expense[0]}">❌ Delete</a>
-        </p>
+        <tr>
+            <td>{expense[1]}</td>
+            <td>${expense[2]:.2f}</td>
+            <td>
+                <a class="delete" href="/delete/{expense[0]}">
+                    Delete
+                </a>
+            </td>
+        </tr>
         """
+
+    html += """
+            </table>
+
+        </div>
+
+    </body>
+    </html>
+    """
 
     return html
 
