@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect
+from google.cloud import storage
 import psycopg2
 
 app = Flask(__name__)
@@ -145,9 +146,10 @@ def home():
                 Total Expenses: ${total:.2f}
             </div>
 
-            <form action="/add" method="post">
+            <form action="/add" method="post" enctype="multipart/form-data">
                 <input name="name" placeholder="Expense Name" required>
                 <input name="amount" type="number" step="0.01" placeholder="Amount" required>
+                <input type="file" name="receipt">
                 <button type="submit">Add Expense</button>
             </form>
 
@@ -188,6 +190,15 @@ def home():
 def add():
     name = request.form["name"]
     amount = request.form["amount"]
+    receipt = request.files["receipt"]
+
+    client = storage.Client()
+    bucket = client.bucket("expense-receipts-feras")
+
+    blob = bucket.blob(receipt.filename)
+    blob.upload_from_file(receipt)
+
+    receipt_url = blob.public_url
 
     conn = psycopg2.connect(
         host="34.52.251.175",
@@ -199,9 +210,9 @@ def add():
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO expenses (name, amount) VALUES (%s, %s)",
-        (name, amount)
-    )
+    "INSERT INTO expenses (name, amount, receipt_url) VALUES (%s, %s, %s)",
+    (name, amount, receipt_url)
+)
 
     conn.commit()
     conn.close()
