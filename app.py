@@ -6,11 +6,11 @@ app = Flask(__name__)
 
 def init_db():
     conn = psycopg2.connect(
-        host="34.52.251.175",
-        database="expenses",
-        user="postgres",
-        password="Expense@2026"
-    )
+    host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
+    database="expenses",
+    user="postgres",
+    password="Expense@2026"
+)
 
     cursor = conn.cursor()
 
@@ -32,12 +32,11 @@ init_db()
 def home():
 
     conn = psycopg2.connect(
-        host="34.52.251.175",
-        database="expenses",
-        user="postgres",
-        password="Expense@2026"
-    )
-
+    host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
+    database="expenses",
+    user="postgres",
+    password="Expense@2026"
+)
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, name, amount FROM expenses")
@@ -201,12 +200,11 @@ def add():
     receipt_url = blob.public_url
 
     conn = psycopg2.connect(
-        host="34.52.251.175",
-        database="expenses",
-        user="postgres",
-        password="Expense@2026"
-    )
-
+    host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
+    database="expenses",
+    user="postgres",
+    password="Expense@2026"
+)
     cursor = conn.cursor()
 
     cursor.execute(
@@ -224,11 +222,11 @@ def add():
 def delete(expense_id):
 
     conn = psycopg2.connect(
-        host="34.52.251.175",
-        database="expenses",
-        user="postgres",
-        password="Expense@2026"
-    )
+    host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
+    database="expenses",
+    user="postgres",
+    password="Expense@2026"
+)
 
     cursor = conn.cursor()
 
