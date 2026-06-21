@@ -5,13 +5,13 @@ import psycopg2
 app = Flask(__name__)
 
 def init_db():
-  conn = psycopg2.connect(
-    host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
-    port=5432,
-    database="expenses",
-    user="postgres",
-    password="Expense@2026"
-)
+    conn = psycopg2.connect(
+        host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
+        port=5432,
+        database="expenses",
+        user="postgres",
+        password="Expense@2026"
+    )
 
     cursor = conn.cursor()
 
