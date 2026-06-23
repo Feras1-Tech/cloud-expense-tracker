@@ -1,4 +1,5 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, send_file
+import io
 from google.cloud import storage
 import psycopg2
 
@@ -28,7 +29,19 @@ def init_db():
 
 init_db()
 
+@app.route("/image/<path:filename>")
+def image(filename):
+    client = storage.Client()
+    bucket = client.bucket("expense-receipts-feras")
 
+    blob = bucket.blob(filename)
+
+    data = blob.download_as_bytes()
+
+    return send_file(
+        io.BytesIO(data),
+        mimetype="image/jpeg"
+    )
 @app.route("/")
 def home():
 
@@ -41,7 +54,7 @@ def home():
 )
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, name, amount FROM expenses")
+    cursor.execute("SELECT id, name, amount, receipt_url FROM expenses")
     expenses = cursor.fetchall()
 
     cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM expenses")
@@ -158,6 +171,7 @@ def home():
                 <tr>
                     <th>Expense</th>
                     <th>Amount</th>
+                    <th>Receipt</th>
                     <th>Action</th>
                 </tr>
     """
@@ -165,14 +179,19 @@ def home():
     for expense in expenses:
         html += f"""
         <tr>
-            <td>{expense[1]}</td>
-            <td>${expense[2]:.2f}</td>
-            <td>
-                <a class="delete" href="/delete/{expense[0]}">
-                    Delete
-                </a>
-            </td>
-        </tr>
+                <td>{expense[1]}</td>
+                    <td>${expense[2]:.2f}</td>
+
+                <td>
+        <img src="/image/{expense[3]}" width="100">
+                </td>
+
+                    <td>
+        <a class="delete" href="/delete/{expense[0]}">
+            Delete
+        </a>
+    </td>
+</tr>
         """
 
     html += """
@@ -199,7 +218,7 @@ def add():
     blob = bucket.blob(receipt.filename)
     blob.upload_from_file(receipt)
 
-    receipt_url = blob.public_url
+    receipt_url = receipt.filename
 
     conn = psycopg2.connect(
     host="/cloudsql/expensetracker-500016:europe-west1:expense-db",
